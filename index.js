@@ -184,6 +184,7 @@ async function main() {
         }
 
         let maxRating = -1;
+        let descriptionList = [];
         let allFilesFailed = true;
 
         for (const file of fileList) {
@@ -202,13 +203,16 @@ async function main() {
             await delay(1000);
 
             const response = await deactai(fileContent);
-            const rating = response.data.rating;
+            const { rating, description } = response.data;
+
+            logInfo(`File ${file} on server ${server.attributes.identifier} received rating ${rating}. Description: ${description}`);
 
             if (rating === false) {
               logInfo(`Detection failed for file ${file} on server ${server.attributes.identifier}. Logging and continuing.`);
               continue;
             }
 
+            descriptionList.push({ file, rating, description });
             allFilesFailed = false;
             maxRating = Math.max(maxRating, rating);
           } catch (fileError) {
@@ -217,16 +221,29 @@ async function main() {
         }
 
         if (allFilesFailed) {
-          detectionFailedServers.push(server);
+          detectionFailedServers.push({
+            identifier: server.attributes.identifier,
+            id: server.attributes.id,
+            name: server.attributes.name,
+            description: server.attributes.description,
+          });
           logInfo(`Detection failed for all files on server ${server.attributes.identifier}. Logging and continuing.`);
           continue;
         }
 
         logInfo(`Max rating for server ${server.attributes.identifier}: ${maxRating}`);
 
+        const serverData = {
+          identifier: server.attributes.identifier,
+          id: server.attributes.id,
+          name: server.attributes.name,
+          description: server.attributes.description,
+          files: descriptionList,
+        };
+
         if (maxRating > 8) {
           suspicious++;
-          suspiciousServers.push(server);
+          suspiciousServers.push(serverData);
           logInfo(`Server ${server.attributes.identifier} marked as suspicious.`);
 
           if (maxRating === 10) {
@@ -236,7 +253,7 @@ async function main() {
             await delay(1000);
 
             await axios.post(`${BASE_URL}/application/servers/${server.attributes.id}/suspend`, {}, { headers: HEADERS });
-            suspendedServers.push(server);
+            suspendedServers.push(serverData);
             logInfo(`Server ${server.attributes.identifier} has been suspended.`);
           }
         }
