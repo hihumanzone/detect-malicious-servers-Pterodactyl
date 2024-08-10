@@ -2,10 +2,11 @@ const fs = require('fs');
 const axios = require('axios');
 const path = require('path');
 
-const API_KEY = '';
-const API_KEY_FILES = '';
-const BASE_URL = '';
-const GROQ_API_KEY = '';
+const API_KEY_ADMIN = 'your_pterodactyl_application_api_key';
+const API_KEY_FILES = 'your_pterodactyl_client_api_key';
+const BASE_URL = 'https://pterodactyl.file.properties/api';
+const GROQ_API_KEY = 'your_groq_api_key_here';
+
 const MODEL = 'llama-3.1-70b-versatile';
 const MAX_RETRIES = 3;
 const system_prompt = `Please rate the following code out of 10 for malicious intent on a Discord bot hosting site. Your response should be in JSON format, as it will be used by an automated system to deactivate malicious code and auto-suspend their respective servers. The \`data.rating\` should be a number from 1 to 10, and \`data.description\` should provide a short explanation for the rating.
@@ -80,7 +81,7 @@ async function fetchServers() {
   const HEADERS = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${API_KEY}`
+    'Authorization': `Bearer ${API_KEY_ADMIN}`
   };
   try {
     const response = await axios.get(`${BASE_URL}/application/servers`, { headers: HEADERS });
@@ -152,7 +153,7 @@ async function main() {
   const HEADERS = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${API_KEY}`
+    'Authorization': `Bearer ${API_KEY_ADMIN}`
   };
   try {
     const startTime = Date.now();
