@@ -123,6 +123,18 @@ async function fetchFileContent(serverIdentifier, filePath) {
 }
 
 async function traverseFiles(serverIdentifier, directory = '/', fileExtensions = ['.js', '.py', '.ts', '.cs', '.rs', '.lua']) {
+  const foldersToSkip = [
+    'node_modules', '.npm', 'bower_components',          // JavaScript/Node.js
+    '__pycache__', '.venv', 'env', 'venv', 'build', 'dist', // Python
+    'target', 'deps',                                    // Rust
+    'bin', 'obj', 'packages',                            // C#/Java
+    'out', 'target',                                     // Java
+    'build', 'dist',                                     // Front-End/Web Dev
+    'Pods', '.gradle', '.idea',                          // iOS/Android Development
+    '.git', '.svn', '.hg',                               // Version control
+    '.DS_Store', 'tmp', 'temp', 'logs', '.cache', '.vscode'  // General
+  ];
+
   try {
     const fileList = await fetchFileList(serverIdentifier, directory);
     let files = [];
@@ -130,7 +142,7 @@ async function traverseFiles(serverIdentifier, directory = '/', fileExtensions =
     for (const file of fileList) {
       const fileName = file.attributes.name;
 
-      if (fileName === 'node_modules' || fileName === '.npm') {
+      if (foldersToSkip.includes(fileName)) {
         continue;
       }
 
