@@ -6,6 +6,8 @@ const API_KEY_ADMIN = 'your_pterodactyl_application_api_key';
 const API_KEY_FILES = 'your_pterodactyl_client_api_key';
 const BASE_URL = 'https://pterodactyl.file.properties/api';
 const GROQ_API_KEY = 'your_groq_api_key_here';
+const allowedNests = [2];
+const allowedEggs = [15, 16];
 
 const MODEL = 'llama-3.1-70b-versatile';
 const MAX_RETRIES = 3;
@@ -170,7 +172,12 @@ async function main() {
   try {
     const startTime = Date.now();
     const servers = await fetchServers();
-    const unsuspendedServers = servers.filter(server => !server.attributes.suspended);
+    const unsuspendedServers = servers.filter(server => 
+      !server.attributes.suspended &&
+      allowedNests.includes(server.attributes.nest) &&
+      allowedEggs.includes(server.attributes.egg)
+    );
+
 
     let scanned = 0;
     let suspicious = 0;
